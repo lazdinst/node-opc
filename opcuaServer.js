@@ -5,6 +5,7 @@ const { OPCUAServer, Variant, DataType, StatusCodes } = require("node-opcua");
 (async () => {
   // Let's create an instance of OPCUAServer
   const server = new OPCUAServer({
+    // hostname: "localhost",
     port: 4334, // the port of the listening socket of the server
     resourcePath: "/UA/MyLittleServer", // this path will be added to the endpoint resource name
     buildInfo: {

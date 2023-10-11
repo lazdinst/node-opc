@@ -16,6 +16,7 @@ const serverGeneratedEndpointUrl =
   "opc.tcp://Taliss-MacBook-Pro.local:4334/UA/MyLittleServer";
 const HOST_NAME = require("os").hostname();
 // const HOST_NAME = "0.0.0.0";
+// const HOST_NAME = "localhost";
 const PORT = "4334";
 
 console.log("Generated Host: ", HOST_NAME);
