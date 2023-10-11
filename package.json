@@ -1,0 +1,16 @@
+{
+  "name": "opc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:server": "NODEOPCUADEBUG=ALL node server.js",
+    "start:client": "node client.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-opcua": "^2.115.0"
+  }
+}
