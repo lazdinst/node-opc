@@ -12,7 +12,10 @@ const {
 } = require("node-opcua");
 
 // const endpointUrl = "opc.tcp://Taliss-MacBook-Pro.local:4334/UA/MyLittleServer";
+const serverGeneratedEndpointUrl =
+  "opc.tcp://Taliss-MacBook-Pro.local:4334/UA/MyLittleServer";
 const HOST_NAME = require("os").hostname();
+// const HOST_NAME = "0.0.0.0";
 const PORT = "4334";
 
 console.log(HOST_NAME);
@@ -20,6 +23,7 @@ console.log(PORT);
 // const endpointUrl = "opc.tcp://" + require("os").hostname() + ":4334/UA/MyLittleServer";
 const endpointUrl = `opc.tcp://${HOST_NAME}:${PORT}/UA/MyLittleServer`;
 console.log(endpointUrl);
+console.log(endpointUrl === serverGeneratedEndpointUrl);
 
 (async () => {
   const client = OPCUAClient.create({
