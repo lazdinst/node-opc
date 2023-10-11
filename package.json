@@ -5,12 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:server": "NODEOPCUADEBUG=ALL node server.js",
-    "start:client": "node client.js"
+    "start:opc_server": "NODEOPCUADEBUG=ALL node opcuaServer.js",
+    "start:opc_client": "node opcuaClient.js",
+    "start:server": "node server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "express": "^4.18.2",
     "node-opcua": "^2.115.0"
   }
 }
