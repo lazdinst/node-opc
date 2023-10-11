@@ -1,3 +1,5 @@
+// https://github.com/node-opcua/node-opcua/blob/master/documentation/sample_server.js
+
 const { OPCUAServer, Variant, DataType, StatusCodes } = require("node-opcua");
 
 (async () => {

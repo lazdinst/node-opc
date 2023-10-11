@@ -8,8 +8,7 @@ app.get("/", (req, res) => {
 
 app.get("/opcdata", async (req, res) => {
   try {
-    const data = await getOpcData();
-    res.json(data);
+    res.json({ data: "test" });
   } catch (err) {
     console.error(err);
     res.status(500).send("Failed to fetch OPC UA data.");

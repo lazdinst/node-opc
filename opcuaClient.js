@@ -1,3 +1,5 @@
+// https://github.com/node-opcua/node-opcua/blob/master/documentation/sample_client_async_await.js
+
 const {
   OPCUAClient,
   BrowseDirection,
