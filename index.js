@@ -1,20 +1,13 @@
 const express = require("express");
 const app = express();
-const port = 3000;
+const opcRouter = require("./routes/opc"); // Import the OPC-related routes
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+// Middleware and configuration
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.get("/opcdata", async (req, res) => {
-  try {
-    res.json({ data: "test" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Failed to fetch OPC UA data.");
-  }
-});
+app.use("/opc", opcRouter);
 
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
+app.listen(3000, () => {
+  console.log("Server listening on port 3000");
 });

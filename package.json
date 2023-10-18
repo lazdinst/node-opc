@@ -5,9 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:opc_server": "NODEOPCUADEBUG=ALL nodemon opcuaServer.js",
-    "start:opc_client": "nodemon opcuaClient.js",
-    "start:server": "nodemon index.js"
+    "start:server": "NODEOPCUADEBUG=ALL nodemon index.js"
   },
   "author": "",
   "license": "ISC",
