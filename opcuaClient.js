@@ -1,153 +1,37 @@
-// https://github.com/node-opcua/node-opcua/blob/master/documentation/sample_client_async_await.js
+const express = require("express");
+const opcua = require("node-opcua");
+const fs = require("fs");
 
-const {
-  OPCUAClient,
-  BrowseDirection,
-  AttributeIds,
-  NodeClassMask,
-  makeBrowsePath,
-  resolveNodeId,
-  TimestampsToReturn,
-  coerceInt32,
-} = require("node-opcua");
+const app = express();
 
-// const endpointUrl = "opc.tcp://Taliss-MacBook-Pro.local:4334/UA/MyLittleServer";
-const serverGeneratedEndpointUrl =
-  "opc.tcp://Taliss-MacBook-Pro.local:4334/UA/MyLittleServer";
-const HOST_NAME = require("os").hostname();
-// const HOST_NAME = "0.0.0.0";
-// const HOST_NAME = "localhost";
-const PORT = "4334";
+const SERVER_ENDPOINT = "opc.tcp://localhost:50000";
+const CERT_PATH = "./certificates/PKI/own/certs/cert.pem";
+const KEY_PATH = "./certificates/PKI/own/private/private_key.pem";
 
-console.log("Generated Host: ", HOST_NAME);
-console.log("Port: ", PORT);
-// const endpointUrl = "opc.tcp://" + require("os").hostname() + ":4334/UA/MyLittleServer";
-const endpointUrl = `opc.tcp://${HOST_NAME}:${PORT}/UA/MyLittleServer`;
-console.log(endpointUrl);
-console.log(
-  "Client === Server endpointUrl",
-  endpointUrl === serverGeneratedEndpointUrl
-);
-
-(async () => {
-  const client = OPCUAClient.create({
+app.get("/connect", async (req, res) => {
+  const options = {
+    applicationName: "NodeOPCUAClient",
+    connectionStrategy: {
+      timeout: 5000,
+    },
+    securityMode: opcua.MessageSecurityMode.SignAndEncrypt,
+    securityPolicy: opcua.SecurityPolicy.Basic256Sha256,
     endpointMustExist: false,
-  });
-  client.on("backoff", (retry, delay) =>
-    console.log(
-      "still trying to connect to ",
-      endpointUrl,
-      ": retry =",
-      retry,
-      "next attempt in ",
-      delay / 1000,
-      "seconds"
-    )
-  );
-  const subscriptionParameters = {
-    maxNotificationsPerPublish: 1000,
-    publishingEnabled: true,
-    requestedLifetimeCount: 100,
-    requestedMaxKeepAliveCount: 10,
-    requestedPublishingInterval: 1000,
+    certificateFile: CERT_PATH,
+    privateKeyFile: KEY_PATH,
   };
 
-  await client.withSubscriptionAsync(
-    endpointUrl,
-    subscriptionParameters,
-    async (session, subscription) => {
-      try {
-        const browseResult = await session.browse({
-          nodeId: resolveNodeId("RootFolder"),
-          referenceTypeId: "Organizes",
-          browseDirection: BrowseDirection.Forward,
-          includeSubtypes: true,
-          nodeClassMask: NodeClassMask.Object,
-          resultMask: 63,
-        });
-        if (browseResult.statusCode.isGood()) {
-          console.log(" rootFolder contains: ");
-          for (let reference of browseResult.references) {
-            console.log(
-              "  ",
-              reference.browseName.toString(),
-              reference.nodeId.toString()
-            );
-          }
-        } else {
-          console.log("cannot browse rootFolder", browseResult.toString());
-        }
+  const client = opcua.OPCUAClient.create(options);
 
-        const datavalue = await session.read({
-          nodeId: "ns=1;s=free_memory",
-          attributeId: AttributeIds.Value,
-        });
+  try {
+    await client.connect(SERVER_ENDPOINT);
+    await client.disconnect();
+    res.send("Connected successfully to the OPC Server.");
+  } catch (err) {
+    res.send(`Failed to connect: ${err.message || err}`);
+  }
+});
 
-        const maxAge = 0;
-        const nodeToRead = {
-          nodeId: "ns=1;s=SystemMemoryFree",
-          attributeId: AttributeIds.Value,
-        };
-
-        const dataValue2 = await session.read(nodeToRead, maxAge);
-        console.log(" free mem % = ", dataValue2.toString());
-
-        // install monitored item
-        const itemToMonitor = {
-          nodeId: resolveNodeId("ns=1;s=SystemMemoryFree"),
-          attributeId: AttributeIds.Value,
-        };
-        const monitoringParameters = {
-          samplingInterval: 100,
-          discardOldest: true,
-          queueSize: 10,
-        };
-
-        const monitoredItem = await subscription.monitor(
-          itemToMonitor,
-          monitoringParameters,
-          TimestampsToReturn.Both
-        );
-        monitoredItem.on("changed", function (dataValue) {
-          console.log(
-            "monitored item changed:  % free mem = ",
-            coerceInt32(dataValue.value.value),
-            "bytes"
-          );
-        });
-
-        const browsePathResult = await session.translateBrowsePath(
-          makeBrowsePath(
-            "RootFolder",
-            "/Objects/Server/VendorServerInfo.1:TransactionsCount"
-          )
-        );
-        if (browsePathResult.statusCode.isGood()) {
-          const transactionCountNodeId = browsePathResult.targets[0].targetId;
-
-          const monitoredItem = await subscription.monitor(
-            {
-              nodeId: transactionCountNodeId,
-              attributeId: AttributeIds.Value,
-            },
-            monitoringParameters,
-            TimestampsToReturn.Both
-          );
-          monitoredItem.on("changed", function (dataValue) {
-            console.log("transaction count = ", dataValue.value.value);
-          });
-        } else {
-          console.log(
-            "cannot find TransactionCount node id",
-            browsePathResult.toString()
-          );
-        }
-      } catch (err) {
-        console.log("err", err.message);
-      }
-      // wait  until CTRL+C is pressed
-      console.log("CTRL+C to stop");
-      await new Promise((resolve) => process.once("SIGINT", resolve));
-    }
-  );
-})();
+app.listen(3000, () => {
+  console.log("Server listening on port 3000");
+});
