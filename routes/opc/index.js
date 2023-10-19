@@ -2,12 +2,11 @@
 const express = require("express");
 const opcua = require("node-opcua");
 const { browseNode, browseAndReadRecursively } = require("./utils/opc")(opcua);
-const { client, connect } = require("./client");
+const { client } = require("./client");
 
 module.exports = (wss) => {
   const { wsSendAllClients } = require("../../ws/utils/ws")(wss);
   const router = express.Router();
-  connect();
 
   router.get("/browse", async (req, res) => {
     try {
@@ -33,13 +32,6 @@ module.exports = (wss) => {
       res.json(nodes);
     } catch (err) {
       res.send(`Failed to browse: ${err.message || err}`);
-    }
-  });
-
-  process.on("exit", () => {
-    if (client) {
-      client.disconnect();
-      console.log("Disconnected from the OPC server gracefully.");
     }
   });
 
