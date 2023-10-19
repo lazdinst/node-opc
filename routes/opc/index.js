@@ -1,7 +1,12 @@
 // routes/opc.js
 const express = require("express");
 const opcua = require("node-opcua");
-const { browseNode, browseAndReadRecursively } = require("./utils/opc")(opcua);
+const {
+  browseNode,
+  browseAndReadRecursively,
+  monitorNode,
+  stopMonitoring,
+} = require("./utils/opcMethods");
 const { client } = require("./client");
 
 module.exports = (wss) => {
@@ -30,6 +35,29 @@ module.exports = (wss) => {
 
       await session.close();
       res.json(nodes);
+    } catch (err) {
+      res.send(`Failed to browse: ${err.message || err}`);
+    }
+  });
+
+  router.get("/monitor-boiler", async (req, res) => {
+    try {
+      const session = await client.createSession();
+      const { subscription, monitoredItems } = await monitorNode({
+        session,
+        nodeId: "ns=4;i=15070",
+        onChange: wsSendAllClients,
+      });
+
+      setTimeout(async () => {
+        await await stopMonitoring({ subscription, monitoredItems, session });
+
+        // If you're done with the session
+        await session.close();
+        console.log("Stopped monitoring and closed session.");
+      }, 10000); // 10000 milliseconds = 10 seconds
+
+      res.json(null);
     } catch (err) {
       res.send(`Failed to browse: ${err.message || err}`);
     }

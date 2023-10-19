@@ -1,10 +1,9 @@
-const opcua = require("node-opcua");
 const {
   createClientInstance,
   connectClient,
   setClientEventListeners,
   attemptReconnection,
-} = require("./utils/opc")(opcua);
+} = require("./utils/opcClient");
 
 let client = createClientInstance();
 setClientEventListeners(client, attemptReconnection, 5000);
