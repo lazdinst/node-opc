@@ -1,5 +1,23 @@
 const opcua = require("node-opcua");
 
+async function simpleBrowse(session, nodeId) {
+  const browseResult = await session.browse(nodeId);
+  let nodes = [];
+
+  for (const reference of browseResult.references) {
+    nodes.push({
+      nodeId: reference.nodeId.toString(),
+      browseName: reference.browseName.toString(),
+      nodeClass: opcua.NodeClass[reference.nodeClass],
+      typeDefinition: reference.typeDefinition
+        ? reference.typeDefinition.toString()
+        : null,
+    });
+  }
+
+  return nodes;
+}
+
 async function browseNode(session, nodeId) {
   const browseResult = await session.browse(nodeId);
   let nodes = [];
@@ -81,11 +99,13 @@ async function createSubscription(session) {
 
 async function monitorNode({ session, nodeId, onChange }) {
   const nodesToMonitor = await browseNode(session, nodeId);
+  console.log("Collected Nodes: ", nodesToMonitor);
 
   const subscription = await createSubscription(session);
   const monitoredItems = [];
 
   for (const node of nodesToMonitor) {
+    console.log(`Monitoring Node: ${node.nodeId}`);
     const monitoredItem = await subscription.monitor(
       {
         nodeId: opcua.resolveNodeId(node.nodeId), // monitoring all child nodes
@@ -99,11 +119,10 @@ async function monitorNode({ session, nodeId, onChange }) {
       opcua.TimestampsToReturn.Both
     );
 
-    monitoredItem.on("changed", (dataValue) => {
-      onChange({ nodeId: node.nodeId, data: dataValue });
-      console.log(
-        `Node ${node.nodeId}: Value changed to ${dataValue.value.value}`
-      );
+    monitoredItem.on("changed", async (dataValue) => {
+      await onChange({ nodeId: node.nodeId, data: dataValue });
+      console.log(`Node ${node.nodeId}:`);
+      console.log(JSON.stringify(dataValue, 0, 2));
     });
 
     monitoredItems.push(monitoredItem);
@@ -132,4 +151,5 @@ module.exports = {
   browseAndReadRecursively,
   monitorNode,
   stopMonitoring,
+  simpleBrowse,
 };
