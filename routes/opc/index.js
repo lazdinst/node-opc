@@ -53,13 +53,13 @@ module.exports = (wss) => {
       const childNodes = await simpleBrowse(session, "ns=4;i=15070");
       console.log("Children of BoilerStatus:", childNodes);
 
-      // setTimeout(async () => {
-      //   await await stopMonitoring({ subscription, monitoredItems, session });
+      setTimeout(async () => {
+        await await stopMonitoring({ subscription, monitoredItems, session });
 
-      //   // If you're done with the session
-      //   await session.close();
-      //   console.log("Stopped monitoring and closed session.");
-      // }, 10000); // 10000 milliseconds = 10 seconds
+        // If you're done with the session
+        await session.close();
+        console.log("Stopped monitoring and closed session.");
+      }, 10000); // 10000 milliseconds = 10 seconds
 
       res.json(null);
     } catch (err) {
@@ -108,11 +108,6 @@ module.exports = (wss) => {
       };
       const results = await session.call(callMethodRequest);
 
-      console.log("here");
-      const nodes = await browseAndReadRecursively(session, "ns=4;i=15070");
-      console.log(nodes);
-      console.log("===========");
-      console.log(results);
       if (results.statusCode.isGood()) {
         res.json({
           status: "success",
@@ -167,7 +162,6 @@ module.exports = (wss) => {
     return tree;
   }
 
-  // Use this function
   router.get("/browse-tree", async (req, res) => {
     try {
       const session = await client.createSession();
