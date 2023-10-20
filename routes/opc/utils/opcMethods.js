@@ -108,7 +108,7 @@ async function monitorNode({ session, nodeId, onChange }) {
     console.log(`Monitoring Node: ${node.nodeId}`);
     const monitoredItem = await subscription.monitor(
       {
-        nodeId: opcua.resolveNodeId(node.nodeId), // monitoring all child nodes
+        nodeId: opcua.resolveNodeId(node.nodeId),
         attributeId: opcua.AttributeIds.Value,
       },
       {
@@ -120,9 +120,9 @@ async function monitorNode({ session, nodeId, onChange }) {
     );
 
     monitoredItem.on("changed", async (dataValue) => {
-      await onChange({ nodeId: node.nodeId, data: dataValue });
+      await onChange({ nodeId: node.nodeId, data: dataValue.value.value });
       console.log(`Node ${node.nodeId}:`);
-      console.log(JSON.stringify(dataValue, 0, 2));
+      console.log(JSON.stringify(dataValue.value.value, 0, 2));
     });
 
     monitoredItems.push(monitoredItem);

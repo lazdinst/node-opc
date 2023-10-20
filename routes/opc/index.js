@@ -3,10 +3,10 @@ const express = require("express");
 const opcua = require("node-opcua");
 const {
   browseNode,
-  browseAndReadRecursively,
   monitorNode,
-  stopMonitoring,
   simpleBrowse,
+  stopMonitoring,
+  browseAndReadRecursively,
 } = require("./utils/opcMethods");
 const { client } = require("./client");
 
@@ -54,12 +54,10 @@ module.exports = (wss) => {
       console.log("Children of BoilerStatus:", childNodes);
 
       setTimeout(async () => {
-        await await stopMonitoring({ subscription, monitoredItems, session });
-
-        // If you're done with the session
+        await stopMonitoring({ subscription, monitoredItems, session });
         await session.close();
         console.log("Stopped monitoring and closed session.");
-      }, 10000); // 10000 milliseconds = 10 seconds
+      }, 10000);
 
       res.json(null);
     } catch (err) {
@@ -73,7 +71,7 @@ module.exports = (wss) => {
       const callMethodRequest = {
         objectId: opcua.coerceNodeId("ns=3;s=Methods"),
         methodId: opcua.coerceNodeId("ns=4;s=HeaterOn"),
-        inputArguments: [], // If the method requires arguments, put them here
+        inputArguments: [],
       };
       const results = await session.call(callMethodRequest);
 
@@ -90,7 +88,7 @@ module.exports = (wss) => {
 
       await session.close();
     } catch (err) {
-      console.error(err); // Log the error for debugging
+      console.error(err);
 
       res
         .status(500)
@@ -162,7 +160,7 @@ module.exports = (wss) => {
     return tree;
   }
 
-  router.get("/browse-tree", async (req, res) => {
+  router.get("/tree", async (req, res) => {
     try {
       const session = await client.createSession();
       const tree = await createServerTree(session);
